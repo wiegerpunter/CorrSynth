@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "stelar_synth_corr_data"
-version = "0.0.12"
+version = "0.1.0"
 authors = [
   { name="stelar_synth_corr_data", email="w.r.punter@tue.nl" },
 ]
