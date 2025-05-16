@@ -4,7 +4,7 @@ from stelar.client import Dataset
 from stelar_synth_corr_data import generate_synthetic_data
 
 
-def generate_synthetic_data_from_own_to_klms(data, name=None, num_samples=None, credentials=None):
+def generate_synthetic_data_from_own_to_klms(data, name=None, credentials=None, num_samples=None, method="pearson"):
     """
     Generate synthetic data based on the input data and send it to the STELAR client.
 
@@ -39,12 +39,12 @@ def generate_synthetic_data_from_own_to_klms(data, name=None, num_samples=None, 
     dataset = stelar_client.datasets[name]
     dataset.tags = ["synthetic", "correlation"]
 
-    synth = send_to_klms(dataset, data, num_samples, credentials)
+    synth, correlation_diff = send_to_klms(dataset, data, credentials, num_samples, method)
 
-    return synth
+    return synth, correlation_diff
 
 
-def generate_synthetic_data_from_klms_to_klms(datasetname, resourcename, num_samples, credentials):
+def generate_synthetic_data_from_klms_to_klms(datasetname, resourcename, credentials=None, num_samples=None, method="pearson"):
     """
     Generate synthetic data based on the input data and send it to the STELAR client.
 
@@ -66,12 +66,17 @@ def generate_synthetic_data_from_klms_to_klms(datasetname, resourcename, num_sam
 
     # Load the dataset
     dataset = stelar_client.datasets[datasetname]
-    resource = dataset.resources[resourcename]
+    # Locate the resource by name
+    resource = next((res for res in dataset.resources if res.name == resourcename), None)
+
+    if resource is None:
+        raise ValueError(f"Resource '{resourcename}' not found in dataset '{datasetname}'")
+
     data = resource.read_dataframe()
 
     # Send the synthetic data to the STELAR client
-    synth = send_to_klms(dataset, data, num_samples, credentials)
-    return synth
+    synth, correlation_diff = send_to_klms(dataset, data, credentials, num_samples, method)
+    return synth, correlation_diff
 
 
 def validate_credentials(credentials):
@@ -90,7 +95,7 @@ def validate_credentials(credentials):
     return
 
 
-def send_to_klms(dataset, data, num_samples, credentials):
+def send_to_klms(dataset, data, credentials, num_samples=1000, method="pearson"):
     """
     Send the synthetic data to the STELAR client.
     Parameters:
@@ -99,8 +104,8 @@ def send_to_klms(dataset, data, num_samples, credentials):
     credentials (dict): Dictionary containing the STELAR client credentials.
     name (str): The name of the dataset.
     """
-    synthetic_data = generate_synthetic_data.generate_synthetic_data(data, num_samples)
+    synthetic_data, correlation_diff = generate_synthetic_data.generate_synthetic_data(data, num_samples, method)
     # Send the synthetic data to the STELAR client
     s3path = "s3://{}/synth_{}.csv".format(credentials['bucket'], dataset.name)
     dataset.add_dataframe(synthetic_data, s3path)
-    return synthetic_data
+    return synthetic_data, correlation_diff

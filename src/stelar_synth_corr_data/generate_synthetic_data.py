@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 
-def generate_synthetic_data(data, num_samples=1000):
+def generate_synthetic_data(data, num_samples=1000, method="pearson"):
     """
     Generate synthetic data based on the input data.
 
@@ -14,8 +14,12 @@ def generate_synthetic_data(data, num_samples=1000):
     pd.DataFrame: A DataFrame containing the synthetic data.
     """
 
+    non_numeric_cols = data.select_dtypes(exclude=['number'])
+    if non_numeric_cols.shape[1] > 0:
+        raise ValueError("Input data contains non-numeric columns. Only numeric data is supported.")
+
     # Compute correlation matrix C on input data
-    C = data.corr(numeric_only=False).values
+    C = data.corr(numeric_only=False, method=method).values
 
     # Generate correlated data using the correlation matrix
     correlated_data = generate_correlated_data(C, num_samples)
@@ -40,9 +44,7 @@ def generate_synthetic_data(data, num_samples=1000):
     generated_corr = synthetic_data.corr().values
     correlation_diff = np.abs(generated_corr - C).max()
 
-    print(f"Max correlation difference: {correlation_diff}")
-
-    return synthetic_data
+    return synthetic_data, correlation_diff
 
 
 def generate_correlated_data(C, num_samples):

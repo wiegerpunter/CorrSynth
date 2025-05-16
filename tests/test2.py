@@ -13,7 +13,7 @@ def test_generate_synthetic_data():
 
     # Generate synthetic data
     num_samples = df.shape[0]  # Use the same number of samples as the input data
-    synth_data = generate_synthetic_data.generate_synthetic_data(df, num_samples)
+    synth_data, correlation_diff = generate_synthetic_data.generate_synthetic_data(df, num_samples)
 
     # Check if the shape of the synthetic data is correct
     assert synth_data.shape == (num_samples, df.shape[1]), "Synthetic data shape is incorrect"
