@@ -7,7 +7,7 @@ This module generates synthetic data with the same correlations as a given datas
 
 ## Installation
 ```bash
-python3 -m pip install --index-url https://test.pypi.org/simple/ --no-deps stelar_synth_corr_data
+python3 -m pip install stelar-synth-corr-data
 ```
 ## Usage outside STELAR KLMS
 ```python
