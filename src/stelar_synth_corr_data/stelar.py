@@ -106,6 +106,11 @@ def send_to_klms(dataset, data, credentials, num_samples=1000, method="pearson")
     """
     synthetic_data, correlation_diff = generate_synthetic_data.generate_synthetic_data(data, num_samples, method)
     # Send the synthetic data to the STELAR client
-    s3path = "s3://{}/synth_{}.csv".format(credentials['bucket'], dataset.name)
+    pot_res_name = "synth_{}_{}_{}".format(dataset.name, num_samples, method)
+    res = next((res for res in dataset.resources if res.name == pot_res_name), None)
+    if res:
+        pot_res_name = pot_res_name + "_v{}".format(len(dataset.resources))
+    s3path = "s3://{}/{}.csv".format(credentials['bucket'], pot_res_name)
+
     dataset.add_dataframe(synthetic_data, s3path)
     return synthetic_data, correlation_diff
